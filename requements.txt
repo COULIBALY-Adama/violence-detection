@@ -1,0 +1,13 @@
+Anaconda
+
+conda config --add channels conda-forge
+conda install imgaug
+
+PIP:
+pip install six numpy scipy Pillow matplotlib scikit-image opencv-python imageio Shapely
+
+pip install imgaug
+
+Tensorflow 1.7.0 ou 1.11.0
+
+pip install -r requirements.txt
