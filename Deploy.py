@@ -10,6 +10,9 @@ import settings.DeploySettings as deploySettings
 import settings.DataSettings as dataSettings
 import src.data.ImageUtils as ImageUtils
 
+from imutils.video import FPS
+
+
 def PrintHelp():
 	print("Usage:")
 	print("\t $(ThisScript)  $(PATH_FILE_NAME_OF_SOURCE_VIDEO)")
@@ -42,12 +45,19 @@ def PrintUnsmoothedResults(unsmoothedResults_):
 			print( str(eachResult)+", ", end='')
 
 	print("\n\t ]")
+time.sleep(1.0)
 
+# start the FPS timer
+fps = FPS().start()
 
 def DetectViolence(PATH_FILE_NAME_OF_SOURCE_VIDEO, PATH_FILE_NAME_TO_SAVE_RESULT):
 	violenceDetector = ViolenceDetector()
 	videoReader = cv2.VideoCapture(PATH_FILE_NAME_OF_SOURCE_VIDEO)
+	#videoReader.set(cv2.CAP_PROP_FPS, 80)
+	#video_fps = videoReader.get(cv2.CAP_PROP_FPS)
+	videoReader.get(cv2.CAP_PROP_FPS)
 	shouldSaveResult = (PATH_FILE_NAME_TO_SAVE_RESULT != None)
+	
 
 	if shouldSaveResult:
 		videoSavor = VideoSavor(PATH_FILE_NAME_TO_SAVE_RESULT + "_Result", videoReader)
@@ -72,6 +82,8 @@ def DetectViolence(PATH_FILE_NAME_OF_SOURCE_VIDEO, PATH_FILE_NAME_TO_SAVE_RESULT
 							 deploySettings.BORDER_SIZE,
 							 cv2.BORDER_CONSTANT,
 							 value=deploySettings.FIGHT_BORDER_COLOR)
+			cv2.putText(resultImage, "Violence detected", (20, 40),
+			cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 225), 2)
 
 		else:
 			resultImage = cv2.copyMakeBorder(currentImage,
@@ -81,14 +93,25 @@ def DetectViolence(PATH_FILE_NAME_OF_SOURCE_VIDEO, PATH_FILE_NAME_TO_SAVE_RESULT
 							 deploySettings.BORDER_SIZE,
 							 cv2.BORDER_CONSTANT,
 							 value=deploySettings.NO_FIGHT_BORDER_COLOR)
+			cv2.putText(resultImage, "No violence", (20, 40),
+			cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
 
+		# display a piece of text to the frame (so we can benchmark
+		# fairly against the fast method)
+#		cv2.putText(resultImage, "Slow Method", (10, 30),
+#		cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
 		cv2.imshow("Violence Detection", resultImage)
 		if shouldSaveResult:
 			videoSavor.AppendFrame(resultImage)
 
 		userResponse = cv2.waitKey(1)
+		#userResponse = cv2.waitkey(int(2000/video_fps))
+		fps.update() # 
 		if userResponse == ord('q'):
+			fps.stop()
+			print("[INFO] elasped time: {:.2f}".format(fps.elapsed())) #
+			print("[INFO] approx. FPS: {:.2f}".format(fps.fps())) #
 			videoReader.release()
 			cv2.destroyAllWindows()
 			break

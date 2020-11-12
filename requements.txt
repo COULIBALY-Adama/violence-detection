@@ -11,3 +11,12 @@ pip install imgaug
 Tensorflow 1.7.0 ou 1.11.0
 
 pip install -r requirements.txt
+
+
+commandes:
+## python Train.py
+## !python Train.py
+## python Evaluate.py val.txt
+## !python Evaluate.py val.txt
+
+## python Deploy.py ./source/mov2.mp4 ./resultat/
